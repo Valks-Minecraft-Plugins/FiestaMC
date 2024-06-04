@@ -1,0 +1,130 @@
+[gd_scene load_steps=8 format=3 uid="uid://bmqye1go85782"]
+
+[ext_resource type="Theme" uid="uid://dbpxxj42boj73" path="res://text_edit_theme.tres" id="1_4khll"]
+[ext_resource type="Script" path="res://Scripts/Program.cs" id="1_bmfix"]
+[ext_resource type="Resource" uid="uid://d1w5gicyxvnhw" path="res://resource_config.tres" id="2_ovwmq"]
+[ext_resource type="Script" path="res://Scripts/PopupSetModsFolder.cs" id="4_nhx30"]
+[ext_resource type="Script" path="res://Scripts/SetModsFolder.cs" id="5_wl4ko"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2cbp1"]
+bg_color = Color(0.109804, 0.109804, 0.109804, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_au01k"]
+bg_color = Color(0.176471, 0.188235, 0.168627, 1)
+
+[node name="Control" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_bmfix")
+Config = ExtResource("2_ovwmq")
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer"]
+layout_mode = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_2cbp1")
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer/MarginContainer/VBoxContainer/PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 15
+
+[node name="TextEdit" type="TextEdit" parent="PanelContainer/MarginContainer/VBoxContainer/PanelContainer/MarginContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme = ExtResource("1_4khll")
+text = "The red fox jumped over the fence. The red fox jumped over the fence. The red fox jumped over the fence. The red fox jumped over the fence. The red fox jumped over the fence. "
+editable = false
+wrap_mode = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="BtnRemove" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Remove Half of Mods"
+
+[node name="BtnNotCulprit" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Mark Removed Mods as Not Culprit"
+
+[node name="BtnRestore" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Restore All Mods"
+
+[node name="BtnSetModsFolder" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Set Mods Folder"
+
+[node name="PopupSetModsFolder" type="PopupPanel" parent="."]
+unique_name_in_owner = true
+initial_position = 1
+size = Vector2i(418, 98)
+theme_override_styles/panel = SubResource("StyleBoxFlat_au01k")
+script = ExtResource("4_nhx30")
+
+[node name="MarginContainer" type="MarginContainer" parent="PopupSetModsFolder"]
+offset_right = 418.0
+offset_bottom = 98.0
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PopupSetModsFolder/MarginContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="PopupSetModsFolder/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "The location of the mods folder has not been set"
+horizontal_alignment = 1
+
+[node name="Button" type="Button" parent="PopupSetModsFolder/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(210, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Set Mods Folder Location"
+
+[node name="FileDialog" type="FileDialog" parent="."]
+unique_name_in_owner = true
+title = "Select the Minecraft Mods Folder"
+initial_position = 1
+size = Vector2i(800, 400)
+ok_button_text = "Select Current Folder"
+file_mode = 2
+access = 2
+script = ExtResource("5_wl4ko")
+Config = ExtResource("2_ovwmq")
+
+[connection signal="pressed" from="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/BtnRemove" to="." method="OnBtnRemovePressed"]
+[connection signal="pressed" from="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/BtnNotCulprit" to="." method="OnBtnNotCulpritPressed"]
+[connection signal="pressed" from="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/BtnRestore" to="." method="OnBtnRestorePressed"]
+[connection signal="pressed" from="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/BtnSetModsFolder" to="." method="OnBtnSetModsFolderPressed"]
+[connection signal="pressed" from="PopupSetModsFolder/MarginContainer/VBoxContainer/Button" to="PopupSetModsFolder" method="OnButtonPressed"]
