@@ -19,6 +19,10 @@ config/icon="res://icon.svg"
 
 project/assembly_name="FiestaMC"
 
+[filesystem]
+
+import/blender/enabled=false
+
 [rendering]
 
 renderer/rendering_method="gl_compatibility"
