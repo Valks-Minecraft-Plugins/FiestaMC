@@ -98,13 +98,7 @@ public partial class Program : Node
                 {
                     if (modsTempFolderInfo.ContainsKey(dependency.Key))
                     {
-                        string modFileName = modsTempFolderInfo[dependency.Key].FileName;
-
-                        allModInfo[dependency.Key].FolderName = "mods";
-
-                        File.Move(
-                            $"{Config.ModsFolderPath}/temp/{modFileName}",
-                            $"{Config.ModsFolderPath}/{modFileName}");
+                        MoveMod(dependency.Key, $@"{Config.ModsFolderPath}\temp", Config.ModsFolderPath);
                     }
                     else
                     {
@@ -205,11 +199,16 @@ public partial class Program : Node
         
         foreach (KeyValuePair<string, JsonModInfo> modInfo in half_of_mods)
         {
-            allModInfo[modInfo.Key].FolderName = "temp";
-
-            File.Move(
-                $@"{Config.ModsFolderPath}\{modInfo.Value.FileName}", 
-                $@"{Config.ModsFolderPath}\temp\{modInfo.Value.FileName}");
+            MoveMod(modInfo.Key, Config.ModsFolderPath, $@"{Config.ModsFolderPath}\temp");
         }
+    }
+
+    void MoveMod(string modId, string from, string to)
+    {
+        string fileName = allModInfo[modId].FileName;
+        string folderName = Path.GetFileName(to);
+
+        allModInfo[modId].FolderName = folderName;
+        File.Move($@"{from}\{fileName}", $@"{to}\{fileName}");
     }
 }
