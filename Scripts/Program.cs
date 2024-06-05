@@ -79,12 +79,12 @@ public partial class Program : Node
 
     void OnBtnNotCulpritPressed()
     {
-        
+        Log("The 'Mark Removed Mods as Not Culprit' button has yet to be implemented");
     }
 
     void OnBtnRestorePressed()
     {
-        
+        Log("The 'Restore All Mods' button has yet to be implemented");
     }
 
     void OnBtnSetModsFolderPressed()
@@ -224,7 +224,9 @@ public partial class Program : Node
         return modInfoDict;
     }
 
-    void Log(object obj)
+    public void Clear() => console.Text = "";
+
+    public void Log(object obj)
     {
         console.Text += obj + "\n";
     }

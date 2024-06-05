@@ -1,7 +1,8 @@
-[gd_scene load_steps=9 format=3 uid="uid://bmqye1go85782"]
+[gd_scene load_steps=11 format=3 uid="uid://bmqye1go85782"]
 
 [ext_resource type="Script" path="res://Scripts/Program.cs" id="1_bmfix"]
 [ext_resource type="Resource" uid="uid://d1w5gicyxvnhw" path="res://resource_config.tres" id="2_ovwmq"]
+[ext_resource type="Script" path="res://Scripts/ConsoleCommands.cs" id="3_24im6"]
 [ext_resource type="Script" path="res://Scripts/FiestaButton.cs" id="4_b0fib"]
 [ext_resource type="Script" path="res://Scripts/PopupSetModsFolder.cs" id="4_nhx30"]
 [ext_resource type="Script" path="res://Scripts/SetModsFolder.cs" id="5_wl4ko"]
@@ -11,10 +12,12 @@ bg_color = Color(0.109804, 0.109804, 0.109804, 1)
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_xfldr"]
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_tgf0r"]
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_au01k"]
 bg_color = Color(0.176471, 0.188235, 0.168627, 1)
 
-[node name="Control" type="Control"]
+[node name="Program" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -65,6 +68,11 @@ theme_override_constants/line_separation = 5
 theme_override_styles/focus = SubResource("StyleBoxEmpty_xfldr")
 bbcode_enabled = true
 selection_enabled = true
+
+[node name="ConsoleInput" type="LineEdit" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_tgf0r")
+script = ExtResource("3_24im6")
 
 [node name="Buttons" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
