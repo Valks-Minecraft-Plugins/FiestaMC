@@ -16,11 +16,49 @@ public partial class Program : Node
 
     PopupPanel popupSetModsFolder;
 
+    Dictionary<string, JsonModInfo> allModInfo;
+
+    FileSystemWatcher fileSystemWatcher;
+
+    bool modsFolderWasModified;
+
     public override void _Ready()
     {
         Config.Load();
         GetNode<FileDialog>("%FileDialog").CurrentDir = Config.ModsFolderPath;
         popupSetModsFolder = GetNode<PopupPanel>("%PopupSetModsFolder");
+
+        ObtainAllModInformation();
+        StartFileWatcher();
+    }
+
+    void OnRenamed(object sender, RenamedEventArgs e) => modsFolderWasModified = true;
+    void OnCreated(object sender, FileSystemEventArgs e) => modsFolderWasModified = true;
+    void OnDeleted(object sender, FileSystemEventArgs e) => modsFolderWasModified = true;
+
+    void StopFileWatcher()
+    {
+        fileSystemWatcher.Dispose();
+    }
+
+    void StartFileWatcher()
+    {
+        fileSystemWatcher = new FileSystemWatcher(Config.ModsFolderPath)
+        {
+            IncludeSubdirectories = true,
+            EnableRaisingEvents = true
+        };
+
+        fileSystemWatcher.Created += OnCreated;
+        fileSystemWatcher.Deleted += OnDeleted;
+        fileSystemWatcher.Renamed += OnRenamed;
+    }
+
+    void ObtainAllModInformation()
+    {
+        modsFolderWasModified = false;
+        allModInfo = GetAllModInfo(Config.ModsFolderPath);
+        allModInfo.Merge(GetAllModInfo(Config.ModsFolderPath + "/temp"));
     }
 
     void OnBtnRemovePressed() // Remove Half of Mods Button
@@ -31,19 +69,22 @@ public partial class Program : Node
             return;
         }
 
+        if (modsFolderWasModified)
+        {
+            ObtainAllModInformation();
+        }
+
+        StopFileWatcher();
+
         // Move half of mods to temp
         MoveHalfOfModsToTemp();
 
-        // Obtain all mod information
-        Dictionary<string, JsonModInfo> all_mods_info = GetAllModInfo(Config.ModsFolderPath);
-        all_mods_info.Merge(GetAllModInfo(Config.ModsFolderPath + "/temp"));
-
         // Check mod dependencies
-        Dictionary<string, JsonModInfo> modsMainFolderInfo = all_mods_info
+        Dictionary<string, JsonModInfo> modsMainFolderInfo = new Dictionary<string, JsonModInfo>(allModInfo)
             .Where(x => x.Value.FolderName == "mods")
             .ToDictionary(x => x.Key, x => x.Value);
 
-        Dictionary<string, JsonModInfo> modsTempFolderInfo = all_mods_info
+        Dictionary<string, JsonModInfo> modsTempFolderInfo = new Dictionary<string, JsonModInfo>(allModInfo)
             .Where(x => x.Value.FolderName == "temp")
             .ToDictionary(x => x.Key, x => x.Value);
 
@@ -59,6 +100,8 @@ public partial class Program : Node
                     {
                         string modFileName = modsTempFolderInfo[dependency.Key].FileName;
 
+                        allModInfo[dependency.Key].FolderName = "mods";
+
                         File.Move(
                             $"{Config.ModsFolderPath}/temp/{modFileName}",
                             $"{Config.ModsFolderPath}/{modFileName}");
@@ -70,6 +113,8 @@ public partial class Program : Node
                 }
             }
         }
+
+        StartFileWatcher();
     }
 
     void OnBtnNotCulpritPressed()
@@ -155,12 +200,16 @@ public partial class Program : Node
 
     void MoveHalfOfModsToTemp()
     {
-        IEnumerable<string> full_mod_list = GetModFiles(Config.ModsFolderPath);
-        IEnumerable<string> half_mod_list = full_mod_list.Take(full_mod_list.Count() / 2);
-
-        foreach (string modFilePath in half_mod_list)
+        var modsMainFolderInfo = allModInfo.Where(x => x.Value.FolderName == "mods");
+        var half_of_mods = modsMainFolderInfo.Take(modsMainFolderInfo.Count() / 2);
+        
+        foreach (KeyValuePair<string, JsonModInfo> modInfo in half_of_mods)
         {
-            File.Move(modFilePath, $@"{Config.ModsFolderPath}/temp/{Path.GetFileName(modFilePath)}");
+            allModInfo[modInfo.Key].FolderName = "temp";
+
+            File.Move(
+                $@"{Config.ModsFolderPath}\{modInfo.Value.FileName}", 
+                $@"{Config.ModsFolderPath}\temp\{modInfo.Value.FileName}");
         }
     }
 }
