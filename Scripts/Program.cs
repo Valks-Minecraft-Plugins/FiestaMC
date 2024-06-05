@@ -96,59 +96,74 @@ public partial class Program : Node
         // This needs to be a for loop and not a foreach because the collection gets modified later
         for (int i = 0; i < modsMainFolderInfo.Count; i++)
         {
-            var mod = modsMainFolderInfo.ElementAt(i);
+            KeyValuePair<string, JsonModInfo> mod = modsMainFolderInfo.ElementAt(i);
 
-            Dictionary<string, object> dependencies = mod.Value.Depends;
-
-            foreach (KeyValuePair<string, object> dependency in dependencies)
-            {
-                if (!modsMainFolderInfo.ContainsKey(dependency.Key))
-                {
-                    if (modsTempFolderInfo.ContainsKey(dependency.Key))
-                    {
-                        MoveMod(dependency.Key, $@"{Config.ModsFolderPath}\temp", Config.ModsFolderPath);
-                    }
-                    else
-                    {
-                        // Some dependency names listed in "depends" are not the same as the mod ids
-                        // So lets do the brute force approach. Keep removing characters from the name
-                        // until the mod ID is found.
-                        string key = dependency.Key;
-                        bool foundMod = false;
-
-                        while (key.Length > 2)
-                        {
-                            if (modsTempFolderInfo.ContainsKey(key))
-                            {
-                                foundMod = true;
-
-                                // Need to update these dicts. Their removed at the end of this function. It's a bit
-                                // messy but it works.
-                                modsMainFolderInfo.Add(key, modsTempFolderInfo[key]);
-                                modsTempFolderInfo.Remove(key);
-
-                                MoveMod(key, $@"{Config.ModsFolderPath}\temp", Config.ModsFolderPath);
-                                break;
-                            }
-                            else if (modsMainFolderInfo.ContainsKey(key))
-                            {
-                                // The mod exists in the main mods folder already
-                                foundMod = true;
-                                break;
-                            }
-
-                            // Remove one character from the end of the string
-                            key = key.Substring(0, key.Length - 1);
-                        }
-
-                        if (!foundMod)
-                            GD.Print($"Could not find dependency '{dependency.Key}' in temp folder for mod '{mod.Key}'");
-                    }
-                }
-            }
+            GetDependenciesForMod(modsMainFolderInfo, modsTempFolderInfo, mod.Key, mod.Value);
         }
 
         StartFileWatcher();
+    }
+
+    void GetDependenciesForMod(
+        Dictionary<string, JsonModInfo> modsMainFolderInfo,
+        Dictionary<string, JsonModInfo> modsTempFolderInfo,
+        string modId,
+        JsonModInfo mod)
+    {
+        Dictionary<string, object> dependencies = mod.Depends;
+
+        foreach (KeyValuePair<string, object> dependency in dependencies)
+        {
+            if (!modsMainFolderInfo.ContainsKey(dependency.Key))
+            {
+                if (modsTempFolderInfo.ContainsKey(dependency.Key))
+                {
+                    // Need to update these dicts. Their removed at the end of this function. It's a bit
+                    // messy but it works.
+                    modsMainFolderInfo.Add(dependency.Key, modsTempFolderInfo[dependency.Key]);
+                    modsTempFolderInfo.Remove(dependency.Key);
+
+                    MoveMod(dependency.Key, $@"{Config.ModsFolderPath}\temp", Config.ModsFolderPath);
+                    //GetDependenciesForMod(modsMainFolderInfo, modsTempFolderInfo, dependency.Key, modsTempFolderInfo[dependency.Key]);
+                }
+                else
+                {
+                    // Some dependency names listed in "depends" are not the same as the mod ids
+                    // So lets do the brute force approach. Keep removing characters from the name
+                    // until the mod ID is found.
+                    string the_key = dependency.Key;
+                    bool foundMod = false;
+
+                    while (the_key.Length > 2)
+                    {
+                        if (modsTempFolderInfo.ContainsKey(the_key))
+                        {
+                            foundMod = true;
+
+                            // Need to update these dicts. Their removed at the end of this function. It's a bit
+                            // messy but it works.
+                            modsMainFolderInfo.Add(the_key, modsTempFolderInfo[the_key]);
+                            modsTempFolderInfo.Remove(the_key);
+
+                            MoveMod(the_key, $@"{Config.ModsFolderPath}\temp", Config.ModsFolderPath);
+                            break;
+                        }
+                        else if (modsMainFolderInfo.ContainsKey(the_key))
+                        {
+                            // The mod exists in the main mods folder already
+                            foundMod = true;
+                            break;
+                        }
+
+                        // Remove one character from the end of the string
+                        the_key = the_key.Substring(0, the_key.Length - 1);
+                    }
+
+                    if (!foundMod)
+                        GD.Print($"Could not find dependency '{dependency.Key}' in temp folder for mod '{modId}'");
+                }
+            }
+        }
     }
 
     void OnBtnNotCulpritPressed()
