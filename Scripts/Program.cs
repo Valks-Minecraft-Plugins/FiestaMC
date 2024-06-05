@@ -12,6 +12,9 @@ using System.Text.Json.Serialization;
 
 namespace FiestaMC;
 
+// Current To Do List
+// - The dependencies should also be checked for the mod dependency that was moved from temp to mods.
+// In other words, need to check to see if the dependency has any of its own dependencies.
 public partial class Program : Node
 {
     [Export] public ResourceConfig Config { get; set; }
@@ -90,10 +93,13 @@ public partial class Program : Node
             .Where(x => x.Value.FolderName == "temp")
             .ToDictionary(x => x.Key, x => x.Value);
 
-        foreach (KeyValuePair<string, JsonModInfo> mod in modsMainFolderInfo)
+        // This needs to be a for loop and not a foreach because the collection gets modified later
+        for (int i = 0; i < modsMainFolderInfo.Count; i++)
         {
+            var mod = modsMainFolderInfo.ElementAt(i);
+
             Dictionary<string, object> dependencies = mod.Value.Depends;
-            
+
             foreach (KeyValuePair<string, object> dependency in dependencies)
             {
                 if (!modsMainFolderInfo.ContainsKey(dependency.Key))
@@ -104,7 +110,39 @@ public partial class Program : Node
                     }
                     else
                     {
-                        GD.Print($"Could not find dependency '{dependency.Key}' in temp folder for mod '{mod.Key}'");
+                        // Some dependency names listed in "depends" are not the same as the mod ids
+                        // So lets do the brute force approach. Keep removing characters from the name
+                        // until the mod ID is found.
+                        string key = dependency.Key;
+                        bool foundMod = false;
+
+                        while (key.Length > 2)
+                        {
+                            if (modsTempFolderInfo.ContainsKey(key))
+                            {
+                                foundMod = true;
+
+                                // Need to update these dicts. Their removed at the end of this function. It's a bit
+                                // messy but it works.
+                                modsMainFolderInfo.Add(key, modsTempFolderInfo[key]);
+                                modsTempFolderInfo.Remove(key);
+
+                                MoveMod(key, $@"{Config.ModsFolderPath}\temp", Config.ModsFolderPath);
+                                break;
+                            }
+                            else if (modsMainFolderInfo.ContainsKey(key))
+                            {
+                                // The mod exists in the main mods folder already
+                                foundMod = true;
+                                break;
+                            }
+
+                            // Remove one character from the end of the string
+                            key = key.Substring(0, key.Length - 1);
+                        }
+
+                        if (!foundMod)
+                            GD.Print($"Could not find dependency '{dependency.Key}' in temp folder for mod '{mod.Key}'");
                     }
                 }
             }
