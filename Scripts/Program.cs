@@ -16,8 +16,6 @@ public partial class Program : Node
 {
     [Export] public ResourceConfig Config { get; set; }
 
-    PopupPanel popupSetModsFolder;
-
     Dictionary<string, JsonModInfo> allModInfo;
 
     FileSystemWatcher fileSystemWatcher;
@@ -28,55 +26,26 @@ public partial class Program : Node
     {
         Config.Load();
         GetNode<FileDialog>("%FileDialog").CurrentDir = Config.ModsFolderPath;
-        popupSetModsFolder = GetNode<PopupPanel>("%PopupSetModsFolder");
 
         ObtainAllModInformation();
         StartFileWatcher();
-    }
 
-    void OnRenamed(object sender, RenamedEventArgs e) => modsFolderWasModified = true;
-    void OnCreated(object sender, FileSystemEventArgs e) => modsFolderWasModified = true;
-    void OnDeleted(object sender, FileSystemEventArgs e) => modsFolderWasModified = true;
+        Node buttons = GetNode("%Buttons");
 
-    void StopFileWatcher()
-    {
-        fileSystemWatcher.Dispose();
-    }
-
-    void StartFileWatcher()
-    {
-        fileSystemWatcher = new FileSystemWatcher(Config.ModsFolderPath)
-        {
-            IncludeSubdirectories = true,
-            EnableRaisingEvents = true
-        };
-
-        fileSystemWatcher.Created += OnCreated;
-        fileSystemWatcher.Deleted += OnDeleted;
-        fileSystemWatcher.Renamed += OnRenamed;
-    }
-
-    void ObtainAllModInformation()
-    {
-        modsFolderWasModified = false;
-        allModInfo = GetAllModInfo(Config.ModsFolderPath);
-        allModInfo.Merge(GetAllModInfo(Config.ModsFolderPath + "/temp"));
+        buttons.GetNode<FiestaButton>("BtnRemove").Setup(OnBtnRemovePressed);
+        buttons.GetNode<FiestaButton>("BtnNotCulprit").Setup(OnBtnNotCulpritPressed);
+        buttons.GetNode<FiestaButton>("BtnRestore").Setup(OnBtnRestorePressed);
+        buttons.GetNode<Button>("BtnSetModsFolder").Pressed += OnBtnSetModsFolderPressed;
     }
 
     void OnBtnRemovePressed() // Remove Half of Mods Button
     {
-        if (!Config.IsModsFolderPathSet())
-        {
-            popupSetModsFolder.Popup();
-            return;
-        }
+        StopFileWatcher();
 
         if (modsFolderWasModified)
         {
             ObtainAllModInformation();
         }
-
-        StopFileWatcher();
 
         // Move half of mods to temp
         MoveHalfOfModsToTemp();
@@ -101,90 +70,67 @@ public partial class Program : Node
         StartFileWatcher();
     }
 
-    void GetDependenciesForMod(
-        Dictionary<string, JsonModInfo> modsMainFolderInfo,
-        Dictionary<string, JsonModInfo> modsTempFolderInfo,
-        string modId,
-        JsonModInfo mod)
-    {
-        Dictionary<string, object> dependencies = mod.Depends;
-
-        foreach (KeyValuePair<string, object> dependency in dependencies)
-        {
-            if (!modsMainFolderInfo.ContainsKey(dependency.Key))
-            {
-                if (modsTempFolderInfo.ContainsKey(dependency.Key))
-                {
-                    MoveMod(dependency.Key, $@"{Config.ModsFolderPath}\temp", Config.ModsFolderPath);
-                    GetDependenciesForMod(modsMainFolderInfo, modsTempFolderInfo, dependency.Key, modsTempFolderInfo[dependency.Key]);
-
-                    // Need to update these dicts. Their removed at the end of this function. It's a bit
-                    // messy but it works.
-                    modsMainFolderInfo.Add(dependency.Key, modsTempFolderInfo[dependency.Key]);
-                    modsTempFolderInfo.Remove(dependency.Key);
-                }
-                else
-                {
-                    // Some dependency names listed in "depends" are not the same as the mod ids
-                    // So lets do the brute force approach. Keep removing characters from the name
-                    // until the mod ID is found.
-                    string the_key = dependency.Key;
-                    bool foundMod = false;
-
-                    while (the_key.Length > 2)
-                    {
-                        if (modsTempFolderInfo.ContainsKey(the_key))
-                        {
-                            foundMod = true;
-
-                            MoveMod(the_key, $@"{Config.ModsFolderPath}\temp", Config.ModsFolderPath);
-                            GetDependenciesForMod(modsMainFolderInfo, modsTempFolderInfo, the_key, modsTempFolderInfo[the_key]);
-
-                            // Need to update these dicts. Their removed at the end of this function. It's a bit
-                            // messy but it works.
-                            modsMainFolderInfo.Add(the_key, modsTempFolderInfo[the_key]);
-                            modsTempFolderInfo.Remove(the_key);
-                            break;
-                        }
-                        else if (modsMainFolderInfo.ContainsKey(the_key))
-                        {
-                            // The mod exists in the main mods folder already
-                            foundMod = true;
-                            break;
-                        }
-
-                        // Remove one character from the end of the string
-                        the_key = the_key.Substring(0, the_key.Length - 1);
-                    }
-
-                    if (!foundMod)
-                        GD.Print($"Could not find dependency '{dependency.Key}' in temp folder for mod '{modId}'");
-                }
-            }
-        }
-    }
-
     void OnBtnNotCulpritPressed()
     {
-        if (!Config.IsModsFolderPathSet())
-        {
-            popupSetModsFolder.Popup();
-            return;
-        }
+        
     }
 
     void OnBtnRestorePressed()
     {
-        if (!Config.IsModsFolderPathSet())
-        {
-            popupSetModsFolder.Popup();
-            return;
-        }
+        
     }
 
     void OnBtnSetModsFolderPressed()
     {
         GetNode<FileDialog>("%FileDialog").Popup();
+    }
+    
+    #region File Watcher
+    void OnRenamed(object sender, RenamedEventArgs e)
+    {
+        modsFolderWasModified = true;
+        /*GD.Print($"Renamed:");
+        GD.Print($"    Old: {e.OldFullPath}");
+        GD.Print($"    New: {e.FullPath}");*/
+    }
+
+    void OnCreated(object sender, FileSystemEventArgs e)
+    {
+        modsFolderWasModified = true;
+        //GD.Print($"Created: {e.FullPath}");
+    }
+
+    void OnDeleted(object sender, FileSystemEventArgs e)
+    {
+        modsFolderWasModified = true;
+        //GD.Print($"Deleted: {e.FullPath}");
+    }
+
+    void StopFileWatcher()
+    {
+        fileSystemWatcher.Dispose();
+    }
+
+    void StartFileWatcher()
+    {
+        fileSystemWatcher = new FileSystemWatcher(Config.ModsFolderPath)
+        {
+            IncludeSubdirectories = true,
+            EnableRaisingEvents = true
+        };
+
+        fileSystemWatcher.Created += OnCreated;
+        fileSystemWatcher.Deleted += OnDeleted;
+        fileSystemWatcher.Renamed += OnRenamed;
+    }
+    #endregion
+
+    #region Helper Functions
+    void ObtainAllModInformation()
+    {
+        modsFolderWasModified = false;
+        allModInfo = GetAllModInfo(Config.ModsFolderPath);
+        allModInfo.Merge(GetAllModInfo(Config.ModsFolderPath + "/temp"));
     }
 
     IEnumerable<string> GetModFiles(string directory)
@@ -270,6 +216,69 @@ public partial class Program : Node
         return modInfoDict;
     }
 
+    void GetDependenciesForMod(
+        Dictionary<string, JsonModInfo> modsMainFolderInfo,
+        Dictionary<string, JsonModInfo> modsTempFolderInfo,
+        string modId,
+        JsonModInfo mod)
+    {
+        Dictionary<string, object> dependencies = mod.Depends;
+
+        foreach (KeyValuePair<string, object> dependency in dependencies)
+        {
+            if (!modsMainFolderInfo.ContainsKey(dependency.Key))
+            {
+                if (modsTempFolderInfo.ContainsKey(dependency.Key))
+                {
+                    MoveMod(dependency.Key, $@"{Config.ModsFolderPath}\temp", Config.ModsFolderPath);
+                    GetDependenciesForMod(modsMainFolderInfo, modsTempFolderInfo, dependency.Key, modsTempFolderInfo[dependency.Key]);
+
+                    // Need to update these dicts. Their removed at the end of this function. It's a bit
+                    // messy but it works.
+                    modsMainFolderInfo.Add(dependency.Key, modsTempFolderInfo[dependency.Key]);
+                    modsTempFolderInfo.Remove(dependency.Key);
+                }
+                else
+                {
+                    // Some dependency names listed in "depends" are not the same as the mod ids
+                    // So lets do the brute force approach. Keep removing characters from the name
+                    // until the mod ID is found.
+                    string the_key = dependency.Key;
+                    bool foundMod = false;
+
+                    while (the_key.Length > 2)
+                    {
+                        if (modsTempFolderInfo.ContainsKey(the_key))
+                        {
+                            foundMod = true;
+
+                            MoveMod(the_key, $@"{Config.ModsFolderPath}\temp", Config.ModsFolderPath);
+                            GetDependenciesForMod(modsMainFolderInfo, modsTempFolderInfo, the_key, modsTempFolderInfo[the_key]);
+
+                            // Need to update these dicts. Their removed at the end of this function. It's a bit
+                            // messy but it works.
+                            modsMainFolderInfo.Add(the_key, modsTempFolderInfo[the_key]);
+                            modsTempFolderInfo.Remove(the_key);
+                            break;
+                        }
+                        else if (modsMainFolderInfo.ContainsKey(the_key))
+                        {
+                            // The mod exists in the main mods folder already
+                            foundMod = true;
+                            break;
+                        }
+
+                        // Remove one character from the end of the string
+                        the_key = the_key.Substring(0, the_key.Length - 1);
+                    }
+
+                    if (!foundMod)
+                        GD.Print($"Could not find dependency '{dependency.Key}' in temp folder for mod '{modId}'");
+                }
+            }
+        }
+    }
+
     JsonModInfo GetModInfo(string modFilePath)
     {
         string mod_name = Path.GetFileName(modFilePath).Replace(".jar", "");
@@ -341,4 +350,5 @@ public partial class Program : Node
         allModInfo[modId].FolderName = folderName;
         File.Move($@"{from}\{fileName}", $@"{to}\{fileName}");
     }
+    #endregion
 }
