@@ -12,9 +12,6 @@ using System.Text.Json.Serialization;
 
 namespace FiestaMC;
 
-// Current To Do List
-// - The dependencies should also be checked for the mod dependency that was moved from temp to mods.
-// In other words, need to check to see if the dependency has any of its own dependencies.
 public partial class Program : Node
 {
     [Export] public ResourceConfig Config { get; set; }
@@ -118,13 +115,13 @@ public partial class Program : Node
             {
                 if (modsTempFolderInfo.ContainsKey(dependency.Key))
                 {
+                    MoveMod(dependency.Key, $@"{Config.ModsFolderPath}\temp", Config.ModsFolderPath);
+                    GetDependenciesForMod(modsMainFolderInfo, modsTempFolderInfo, dependency.Key, modsTempFolderInfo[dependency.Key]);
+
                     // Need to update these dicts. Their removed at the end of this function. It's a bit
                     // messy but it works.
                     modsMainFolderInfo.Add(dependency.Key, modsTempFolderInfo[dependency.Key]);
                     modsTempFolderInfo.Remove(dependency.Key);
-
-                    MoveMod(dependency.Key, $@"{Config.ModsFolderPath}\temp", Config.ModsFolderPath);
-                    //GetDependenciesForMod(modsMainFolderInfo, modsTempFolderInfo, dependency.Key, modsTempFolderInfo[dependency.Key]);
                 }
                 else
                 {
@@ -140,12 +137,13 @@ public partial class Program : Node
                         {
                             foundMod = true;
 
+                            MoveMod(the_key, $@"{Config.ModsFolderPath}\temp", Config.ModsFolderPath);
+                            GetDependenciesForMod(modsMainFolderInfo, modsTempFolderInfo, the_key, modsTempFolderInfo[the_key]);
+
                             // Need to update these dicts. Their removed at the end of this function. It's a bit
                             // messy but it works.
                             modsMainFolderInfo.Add(the_key, modsTempFolderInfo[the_key]);
                             modsTempFolderInfo.Remove(the_key);
-
-                            MoveMod(the_key, $@"{Config.ModsFolderPath}\temp", Config.ModsFolderPath);
                             break;
                         }
                         else if (modsMainFolderInfo.ContainsKey(the_key))
