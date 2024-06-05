@@ -114,7 +114,7 @@ text = "Set Mods Folder Location"
 
 [node name="FileDialog" type="FileDialog" parent="."]
 unique_name_in_owner = true
-title = "Select the Minecraft Mods Folder"
+title = "Open a Directory"
 initial_position = 1
 size = Vector2i(800, 400)
 ok_button_text = "Select Current Folder"

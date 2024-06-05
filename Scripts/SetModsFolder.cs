@@ -9,8 +9,6 @@ public partial class SetModsFolder : FileDialog
 
     public override void _Ready()
     {
-        CurrentDir = Config.ModsFolderPath;
-
         DirSelected += (dir) =>
         {
             Config.ModsFolderPath = dir;
