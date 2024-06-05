@@ -23,3 +23,4 @@ This tool will auto add back all the required dependencies you removed and add t
 - [ ] Auto start Minecraft exe when the "Remove Half of Mods" is pressed
 - [ ] Add a new button "Find Culprit Mod" which will constantly remove half of mods and start minecraft as many times needed until the culprit mod is found. This should only be used if the culprit mod is crashing the Minecraft instance. If the Minecraft instance runs for more than x seconds then the culprit mod will have to be narrowed down from the mods left that were not marked as 'not culprit'.
 - [ ] Add some kind of fancy UI so the user is able to find what dependencies x mod has. Perhaps the user wants to remove a mod but they don't know if the mod is required to run other mods in their modpack.
+- [ ] Read the "breaks" field in json and warn the user if the mod breaks any other mods
