@@ -5,8 +5,10 @@ global using System.Collections;
 global using System.Collections.Generic;
 global using System.Linq;
 global using System.Text.Json;
-
 using System.IO;
+using System.IO.Compression;
+using System.Text.Encodings.Web;
+using System.Text.Json.Serialization;
 
 namespace FiestaMC;
 
@@ -90,9 +92,9 @@ public partial class Program : Node
 
         foreach (KeyValuePair<string, JsonModInfo> mod in modsMainFolderInfo)
         {
-            Dictionary<string, string> dependencies = mod.Value.Depends;
+            Dictionary<string, object> dependencies = mod.Value.Depends;
             
-            foreach (KeyValuePair<string, string> dependency in dependencies)
+            foreach (KeyValuePair<string, object> dependency in dependencies)
             {
                 if (!modsMainFolderInfo.ContainsKey(dependency.Key))
                 {
@@ -136,6 +138,9 @@ public partial class Program : Node
 
     IEnumerable<string> GetModFiles(string directory)
     {
+        if (!Directory.Exists(directory))
+            Directory.CreateDirectory(directory);
+
         return Directory.GetFiles(directory).Where(x => x.Contains(".jar"));
     }
 
@@ -157,12 +162,22 @@ public partial class Program : Node
         {
             JsonModInfo modInfo = GetModInfo(mod);
 
+            if (modInfo == null)
+                continue;
+
             foreach (string ignored_dependency in ignored_dependencies)
             {
                 modInfo.Depends.Remove(ignored_dependency);
             }
 
-            modInfoDict.Add(modInfo.Id, modInfo);
+            if (!modInfoDict.ContainsKey(modInfo.Id))
+            {
+                modInfoDict.Add(modInfo.Id, modInfo);
+            }
+            else
+            {
+                GD.Print($"There is a duplicate mod named '{modInfo.Id}'. It will be skipped.");
+            }
         }
 
         return modInfoDict;
@@ -173,19 +188,51 @@ public partial class Program : Node
         string mod_name = Path.GetFileName(modFilePath).Replace(".jar", "");
         string extract_to_path = $@"{Config.ModsFolderPath}/delete_me/{mod_name}";
 
-        System.IO.Compression.ZipFile.ExtractToDirectory(
-            sourceArchiveFileName: modFilePath,
-            destinationDirectoryName: extract_to_path);
-
-        string file_contents = File.ReadAllText($"{extract_to_path}/fabric.mod.json");
-
-        JsonModInfo modInfo = JsonSerializer.Deserialize<JsonModInfo>(file_contents, new JsonSerializerOptions
+        try
         {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        });
+            System.IO.Compression.ZipFile.ExtractToDirectory(
+                sourceArchiveFileName: modFilePath,
+                destinationDirectoryName: extract_to_path);
+        } catch (IOException)
+        {
+            GD.Print($"The path {extract_to_path} is not empty. Looks like this mod was extracted already so it will be skipped.");
+        }
 
-        modInfo.FolderName = Path.GetFileName(Path.GetDirectoryName(modFilePath));
-        modInfo.FileName = Path.GetFileName(modFilePath);
+        /*using (ZipArchive zip = ZipFile.Open(modFilePath, ZipArchiveMode.Read))
+            foreach (ZipArchiveEntry entry in zip.Entries)
+                if (entry.Name == "fabric.mod.json")
+                    entry.ExtractToFile(extract_to_path + @"/fabric.mod.json");*/
+
+        string file_contents;
+
+        try
+        {
+            file_contents = File.ReadAllText($"{extract_to_path}/fabric.mod.json");
+        } catch (FileNotFoundException)
+        {
+            GD.Print($"The mod named {mod_name} has no 'fabric.mod.json' so it will be skipped.");
+            return null;
+        }
+        
+        // I am really starting to hate json
+        file_contents = file_contents.Replace("\n", "").Replace("\r", "");
+
+        JsonModInfo modInfo = null;
+
+        try
+        {
+            modInfo = JsonSerializer.Deserialize<JsonModInfo>(file_contents, new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            });
+
+            modInfo.FolderName = Path.GetFileName(Path.GetDirectoryName(modFilePath));
+            modInfo.FileName = Path.GetFileName(modFilePath);
+        }
+        catch (JsonException e)
+        {
+            GD.Print($"Failed to read fabric.mod.json for mod '{mod_name}': {e.Message}");
+        }
 
         Directory.Delete($@"{Config.ModsFolderPath}/delete_me", recursive: true);
 
