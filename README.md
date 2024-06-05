@@ -14,3 +14,12 @@ The brute force solution is to remove half your mods and check to see if the pro
 This works but when you have over 400 mods and you quickly remove 200 mods without giving it a second thought, you're also removing a ton of dependency mods that your new reduced mod list depends on. You could manually add them back but this is very time consuming.
 
 This tool will auto add back all the required dependencies you removed and add them back to the mods folder for you.
+
+## Roadmap
+- [x] Code the logic for "Remove Half of Mods" button and make sure it 100% works
+- [ ] Disable "Remove Half of Mods" button when it's doing its thing
+- [ ] Print text in the actual UI instead of relying on GD.Print
+- [ ] Code the logic for "Mark Removed Mods as Culprit" and "Restore All Mods"
+- [ ] Auto start Minecraft exe when the "Remove Half of Mods" is pressed
+- [ ] Add a new button "Find Culprit Mod" which will constantly remove half of mods and start minecraft as many times needed until the culprit mod is found. This should only be used if the culprit mod is crashing the Minecraft instance. If the Minecraft instance runs for more than x seconds then the culprit mod will have to be narrowed down from the mods left that were not marked as 'not culprit'.
+- [ ] Add some kind of fancy UI so the user is able to find what dependencies x mod has. Perhaps the user wants to remove a mod but they don't know if the mod is required to run other mods in their modpack.
