@@ -22,16 +22,20 @@ public partial class Program : Node
 
     bool modsFolderWasModified;
 
+    RichTextLabel console;
+
     public override void _Ready()
     {
         Config.Load();
         GetNode<FileDialog>("%FileDialog").CurrentDir = Config.ModsFolderPath;
 
+        console = GetNode<RichTextLabel>("%Console");
+
         ObtainAllModInformation();
         StartFileWatcher();
 
         Node buttons = GetNode("%Buttons");
-
+        
         buttons.GetNode<FiestaButton>("BtnRemove").Setup(OnBtnRemovePressed);
         buttons.GetNode<FiestaButton>("BtnNotCulprit").Setup(OnBtnNotCulpritPressed);
         buttons.GetNode<FiestaButton>("BtnRestore").Setup(OnBtnRestorePressed);
@@ -48,7 +52,7 @@ public partial class Program : Node
         }
 
         // Move half of mods to temp
-        MoveHalfOfModsToTemp();
+        MoveHalfOfModsToTemp(out int modsMoved);
 
         // Check mod dependencies
         Dictionary<string, JsonModInfo> modsMainFolderInfo = new Dictionary<string, JsonModInfo>(allModInfo)
@@ -66,6 +70,9 @@ public partial class Program : Node
 
             GetDependenciesForMod(modsMainFolderInfo, modsTempFolderInfo, mod.Key, mod.Value);
         }
+
+        Log($"[color=77ff77][color=00ff03]{modsMoved}[/color] mods were moved to \"temp\" and [color=00ff03]{dependenciesFound}[/color] dependencies were moved back to \"mods\"[/color]");
+        dependenciesFound = 0;
 
         StartFileWatcher();
     }
@@ -128,6 +135,7 @@ public partial class Program : Node
     #region Helper Functions
     void ObtainAllModInformation()
     {
+        Log("[i]The mods folder has changed, obtaining new mod information...[/i]");
         modsFolderWasModified = false;
         allModInfo = GetAllModInfo(Config.ModsFolderPath);
         allModInfo.Merge(GetAllModInfo(Config.ModsFolderPath + "/temp"));
@@ -209,12 +217,24 @@ public partial class Program : Node
             }
             else
             {
-                GD.Print($"There is a duplicate mod named '{modInfo.Id}'. It will be skipped.");
+                LogWarning($"[color=f4ff00]{modInfo.Id}[/color] is a duplicate mod so it will be skipped.");
             }
         }
 
         return modInfoDict;
     }
+
+    void Log(object obj)
+    {
+        console.Text += obj + "\n";
+    }
+
+    void LogWarning(object obj)
+    {
+        Log($"[color=f9ff84]{obj}[/color]");
+    }
+
+    int dependenciesFound;
 
     void GetDependenciesForMod(
         Dictionary<string, JsonModInfo> modsMainFolderInfo,
@@ -230,6 +250,7 @@ public partial class Program : Node
             {
                 if (modsTempFolderInfo.ContainsKey(dependency.Key))
                 {
+                    dependenciesFound++;
                     MoveMod(dependency.Key, $@"{Config.ModsFolderPath}\temp", Config.ModsFolderPath);
                     GetDependenciesForMod(modsMainFolderInfo, modsTempFolderInfo, dependency.Key, modsTempFolderInfo[dependency.Key]);
 
@@ -252,6 +273,7 @@ public partial class Program : Node
                         {
                             foundMod = true;
 
+                            dependenciesFound++;
                             MoveMod(the_key, $@"{Config.ModsFolderPath}\temp", Config.ModsFolderPath);
                             GetDependenciesForMod(modsMainFolderInfo, modsTempFolderInfo, the_key, modsTempFolderInfo[the_key]);
 
@@ -273,7 +295,7 @@ public partial class Program : Node
                     }
 
                     if (!foundMod)
-                        GD.Print($"Could not find dependency '{dependency.Key}' in temp folder for mod '{modId}'");
+                        LogWarning($"Dependency '{dependency.Key}' could not be found in temp folder for mod '{modId}'");
                 }
             }
         }
@@ -302,7 +324,7 @@ public partial class Program : Node
             file_contents = File.ReadAllText($@"{Config.ModsFolderPath}/fabric.mod.json");
         } catch (FileNotFoundException)
         {
-            GD.Print($"The mod named {mod_name} has no 'fabric.mod.json' so it will be skipped.");
+            LogWarning($"[color=f4ff00]{mod_name}[/color] has no fabric.mod.json so it will be skipped.");
             return null;
         }
         
@@ -323,7 +345,7 @@ public partial class Program : Node
         }
         catch (JsonException e)
         {
-            GD.Print($"Failed to read fabric.mod.json for mod '{mod_name}': {e.Message}");
+            LogWarning($"Failed to read fabric.mod.json for {mod_name}: {e.Message}");
         }
 
         File.Delete($@"{Config.ModsFolderPath}/fabric.mod.json");
@@ -331,7 +353,7 @@ public partial class Program : Node
         return modInfo;
     }
 
-    void MoveHalfOfModsToTemp()
+    void MoveHalfOfModsToTemp(out int modsMoved)
     {
         var modsMainFolderInfo = allModInfo.Where(x => x.Value.FolderName == "mods");
         var half_of_mods = modsMainFolderInfo.Take(modsMainFolderInfo.Count() / 2);
@@ -340,6 +362,8 @@ public partial class Program : Node
         {
             MoveMod(modInfo.Key, Config.ModsFolderPath, $@"{Config.ModsFolderPath}\temp");
         }
+
+        modsMoved = half_of_mods.Count();
     }
 
     void MoveMod(string modId, string from, string to)
