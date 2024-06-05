@@ -186,6 +186,7 @@ public partial class Program : Node
     {
         string[] ignored_dependencies = new string[]
         {
+            "fabric-resource-loader-v0",
             "fabricloader",
             "fabric",
             "minecraft",
