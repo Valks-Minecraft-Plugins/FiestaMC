@@ -186,28 +186,24 @@ public partial class Program : Node
     JsonModInfo GetModInfo(string modFilePath)
     {
         string mod_name = Path.GetFileName(modFilePath).Replace(".jar", "");
-        string extract_to_path = $@"{Config.ModsFolderPath}/delete_me/{mod_name}";
 
-        try
+        using (ZipArchive zip = ZipFile.Open(modFilePath, ZipArchiveMode.Read))
         {
-            System.IO.Compression.ZipFile.ExtractToDirectory(
-                sourceArchiveFileName: modFilePath,
-                destinationDirectoryName: extract_to_path);
-        } catch (IOException)
-        {
-            GD.Print($"The path {extract_to_path} is not empty. Looks like this mod was extracted already so it will be skipped.");
-        }
-
-        /*using (ZipArchive zip = ZipFile.Open(modFilePath, ZipArchiveMode.Read))
             foreach (ZipArchiveEntry entry in zip.Entries)
+            {
                 if (entry.Name == "fabric.mod.json")
-                    entry.ExtractToFile(extract_to_path + @"/fabric.mod.json");*/
+                {
+                    entry.ExtractToFile($@"{Config.ModsFolderPath}/fabric.mod.json");
+                    break;
+                }
+            }
+        }
 
         string file_contents;
 
         try
         {
-            file_contents = File.ReadAllText($"{extract_to_path}/fabric.mod.json");
+            file_contents = File.ReadAllText($@"{Config.ModsFolderPath}/fabric.mod.json");
         } catch (FileNotFoundException)
         {
             GD.Print($"The mod named {mod_name} has no 'fabric.mod.json' so it will be skipped.");
@@ -234,7 +230,7 @@ public partial class Program : Node
             GD.Print($"Failed to read fabric.mod.json for mod '{mod_name}': {e.Message}");
         }
 
-        Directory.Delete($@"{Config.ModsFolderPath}/delete_me", recursive: true);
+        File.Delete($@"{Config.ModsFolderPath}/fabric.mod.json");
 
         return modInfo;
     }
