@@ -2,7 +2,7 @@
 
 > ℹ️ This tool only works on Fabric modpacks. Support for Forge modpacks will come if it gets requested enough.
 
-![Untitled](https://github.com/Valks-Minecraft-Plugins/FiestaMC/assets/6277739/a149d558-257b-4930-ba2c-7ffc6dbeefbd)
+![Untitled](https://github.com/Valks-Minecraft-Plugins/FiestaMC/assets/6277739/5ffa1587-9612-4892-ade5-64462cf42dc5)
 
 ## What is this?
 A tool that simplifies the tedious process of adding required dependency mods back to the mods folder when debugging faulty Minecraft mods.
@@ -17,8 +17,8 @@ This tool will auto add back all the required dependencies you removed and add t
 
 ## Roadmap
 - [x] Code the logic for "Remove Half of Mods" button and make sure it 100% works
-- [ ] Disable "Remove Half of Mods" button when it's doing its thing
-- [ ] Print text in the actual UI instead of relying on GD.Print
+- [x] Disable "Remove Half of Mods" button when it's doing its thing
+- [x] Print text in the actual UI instead of relying on GD.Print
 - [ ] Code the logic for "Mark Removed Mods as Culprit" and "Restore All Mods"
 - [ ] Auto start Minecraft exe when the "Remove Half of Mods" is pressed
 - [ ] Add a new button "Find Culprit Mod" which will constantly remove half of mods and start minecraft as many times needed until the culprit mod is found. This should only be used if the culprit mod is crashing the Minecraft instance. If the Minecraft instance runs for more than x seconds then the culprit mod will have to be narrowed down from the mods left that were not marked as 'not culprit'.
