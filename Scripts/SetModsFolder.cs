@@ -1,6 +1,3 @@
-using Godot;
-using System;
-
 namespace FiestaMC;
 
 public partial class SetModsFolder : FileDialog
@@ -13,6 +10,11 @@ public partial class SetModsFolder : FileDialog
         {
             Config.ModsFolderPath = dir;
             Config.Save();
+
+            Program program = GetTree().Root.GetNode<Program>("Program");
+            program.StopFileWatcher();
+            program.ObtainAllModInformation();
+            program.StartFileWatcher();
         };
     }
 }

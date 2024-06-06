@@ -113,12 +113,12 @@ public partial class Program : Node
         //GD.Print($"Deleted: {e.FullPath}");
     }
 
-    void StopFileWatcher()
+    public void StopFileWatcher()
     {
         fileSystemWatcher.Dispose();
     }
 
-    void StartFileWatcher()
+    public void StartFileWatcher()
     {
         fileSystemWatcher = new FileSystemWatcher(Config.ModsFolderPath)
         {
@@ -133,7 +133,7 @@ public partial class Program : Node
     #endregion
 
     #region Helper Functions
-    void ObtainAllModInformation()
+    public void ObtainAllModInformation()
     {
         Log("[i]The mods folder has changed, obtaining new mod information...[/i]");
         modsFolderWasModified = false;
