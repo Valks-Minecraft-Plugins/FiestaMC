@@ -11,10 +11,10 @@ public partial class SetModsFolder : FileDialog
             Config.ModsFolderPath = dir;
             Config.Save();
 
-            Program program = GetTree().Root.GetNode<Program>("Program");
-            program.StopFileWatcher();
-            program.ObtainAllModInformation();
-            program.StartFileWatcher();
+            ModInfo modInfo = GetTree().Root.GetNode<Program>("Program").ModInfo;
+            modInfo.StopFileWatcher();
+            modInfo.ObtainAllModInformation();
+            modInfo.StartFileWatcher();
         };
     }
 }

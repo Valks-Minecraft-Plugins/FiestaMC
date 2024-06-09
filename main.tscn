@@ -1,8 +1,9 @@
-[gd_scene load_steps=11 format=3 uid="uid://bmqye1go85782"]
+[gd_scene load_steps=12 format=3 uid="uid://bmqye1go85782"]
 
 [ext_resource type="Script" path="res://Scripts/Program.cs" id="1_bmfix"]
 [ext_resource type="Resource" uid="uid://d1w5gicyxvnhw" path="res://resource_config.tres" id="2_ovwmq"]
 [ext_resource type="Script" path="res://Scripts/ConsoleCommands.cs" id="3_24im6"]
+[ext_resource type="Script" path="res://Scripts/Console.cs" id="3_mfo7v"]
 [ext_resource type="Script" path="res://Scripts/FiestaButton.cs" id="4_b0fib"]
 [ext_resource type="Script" path="res://Scripts/PopupSetModsFolder.cs" id="4_nhx30"]
 [ext_resource type="Script" path="res://Scripts/SetModsFolder.cs" id="5_wl4ko"]
@@ -68,6 +69,7 @@ theme_override_constants/line_separation = 5
 theme_override_styles/focus = SubResource("StyleBoxEmpty_xfldr")
 bbcode_enabled = true
 selection_enabled = true
+script = ExtResource("3_mfo7v")
 
 [node name="ConsoleInput" type="LineEdit" parent="PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2

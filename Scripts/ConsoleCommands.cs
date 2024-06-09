@@ -4,8 +4,6 @@ public partial class ConsoleCommands : LineEdit
 {
     public override void _Ready()
     {
-        Program program = GetTree().Root.GetNode<Program>("Program");
-
         TextSubmitted += text =>
         {
             Clear();
@@ -15,10 +13,10 @@ public partial class ConsoleCommands : LineEdit
             switch (cmd)
             {
                 case "clear":
-                    program.Clear();
+                    Console.ClearText();
                     break;
                 default:
-                    program.Log($"'{cmd}' is not a valid command");
+                    Console.Log($"'{cmd}' is not a valid command");
                     break;
             }
         };

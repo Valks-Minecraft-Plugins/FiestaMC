@@ -5,7 +5,6 @@ namespace FiestaMC;
 public class JsonModInfo
 {
     public string FileName { get; set; }
-    public string FolderName { get; set; }
 
     // JSON Values
     public string Id { get; set; }
