@@ -19,7 +19,7 @@ This tool will auto add back all the required dependencies you removed and add t
 
 ## Roadmap
 - [x] Code the logic for "Remove Half of Mods" button and make sure it 100% works
-- [ ] Pull dependencies from the "not culprit" folder and not just the "temp" folder
+- [x] Pull dependencies from the "not culprit" folder and not just the "temp" folder
 - [ ] Implement move command (e.g. `move 100% mods to not_culprit` and `move 50% temp to mods`)
 - [ ] Implement info command, this will show the dependencies and incompatible ('breaks') mods for this mod (e.g. `info <mod_name>`)
 - [ ] Implement whitelist command, this will prevent `move` command from being able to move this mod in the mods folder (e.g. `whitelist <mod_name>`)
