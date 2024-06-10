@@ -9,14 +9,15 @@ public partial class Console : RichTextLabel
         instance = this;
     }
 
-    public static void Log(object obj)
+    public static void Log(object obj, string color = "dddddd", int size = 16)
     {
-        instance.Text += obj + "\n";
+        instance.Text += $"[font_size={size}][color={color}]{obj}[/color][/font_size]\n";
+        instance.ScrollToLine(instance.GetLineCount());
     }
 
     public static void LogWarning(object obj)
     {
-        Log($"[color=f9ff84]{obj}[/color]");
+        Log($"{obj}", "f9ff84", 17);
     }
 
     public static void ClearText() => instance.Text = "";

@@ -16,17 +16,15 @@ public partial class Program : Node
 {
     [Export] public ResourceConfig Config { get; set; }
 
-    public ModInfo ModInfo { get; private set; }
-
     public override void _Ready()
     {
-        ModInfo = new(this);
 
         Config.Load();
         GetNode<FileDialog>("%FileDialog").CurrentDir = Config.ModsFolderPath;
 
-        ModInfo.ObtainAllModInformation();
-        ModInfo.StartFileWatcher();
+        Config.ModInfo = new(this);
+        Config.ModInfo.ObtainAllModInformation();
+        Config.ModInfo.StartFileWatcher();
 
         Node buttons = GetNode("%Buttons");
         
@@ -38,11 +36,11 @@ public partial class Program : Node
 
     void OnBtnRemovePressed() // Remove Half of Mods Button
     {
-        ModInfo.StopFileWatcher();
+        Config.ModInfo.StopFileWatcher();
 
-        if (ModInfo.ModsFolderWasModified)
+        if (Config.ModInfo.ModsFolderWasModified)
         {
-            ModInfo.ObtainAllModInformation();
+            Config.ModInfo.ObtainAllModInformation();
         }
 
         // Move half of mods to temp
@@ -51,17 +49,17 @@ public partial class Program : Node
         // Check mod dependencies
 
         // This needs to be a for loop and not a foreach because the collection gets modified later
-        for (int i = 0; i < ModInfo.FolderMods.Count; i++)
+        for (int i = 0; i < Config.ModInfo.FolderMods.Count; i++)
         {
-            KeyValuePair<string, JsonModInfo> mod = ModInfo.FolderMods.ElementAt(i);
+            KeyValuePair<string, JsonModInfo> mod = Config.ModInfo.FolderMods.ElementAt(i);
 
-            ModInfo.GetDependenciesForMod(mod.Key, mod.Value);
+            Config.ModInfo.GetDependenciesForMod(mod.Key, mod.Value);
         }
 
-        Console.Log($"[color=77ff77][color=00ff03]{modsMoved}[/color] mods were moved to \"temp\" and [color=00ff03]{ModInfo.DependenciesFound}[/color] dependencies were moved back to \"mods\"[/color]");
-        ModInfo.DependenciesFound = 0;
+        Console.Log($"[color=00ff03]{modsMoved}[/color] mods were moved to \"temp\" and [color=00ff03]{Config.ModInfo.DependenciesFound}[/color] dependencies were moved back to \"mods\"", "77ff77");
+        Config.ModInfo.DependenciesFound = 0;
 
-        ModInfo.StartFileWatcher();
+        Config.ModInfo.StartFileWatcher();
     }
 
     void OnBtnNotCulpritPressed()
@@ -81,14 +79,14 @@ public partial class Program : Node
 
     void MoveHalfOfModsToTemp(out int modsMoved)
     {
-        var half_of_mods = ModInfo.FolderMods.Take(ModInfo.FolderMods.Count() / 2);
+        var half_of_mods = Config.ModInfo.FolderMods.Take(Config.ModInfo.FolderMods.Count() / 2);
         
         foreach (KeyValuePair<string, JsonModInfo> mod in half_of_mods)
         {
-            string fileName = ModInfo.FolderMods[mod.Key].FileName;
+            string fileName = Config.ModInfo.FolderMods[mod.Key].FileName;
 
-            ModInfo.FolderTemp.Add(mod.Key, mod.Value);
-            ModInfo.FolderMods.Remove(mod.Key);
+            Config.ModInfo.FolderTemp.Add(mod.Key, mod.Value);
+            Config.ModInfo.FolderMods.Remove(mod.Key);
 
             MoveMod(fileName, Config.ModsFolderPath, $@"{Config.ModsFolderPath}\temp");
         }

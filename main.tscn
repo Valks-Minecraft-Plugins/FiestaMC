@@ -75,6 +75,7 @@ script = ExtResource("3_mfo7v")
 layout_mode = 2
 theme_override_styles/focus = SubResource("StyleBoxEmpty_tgf0r")
 script = ExtResource("3_24im6")
+config = ExtResource("2_ovwmq")
 
 [node name="Buttons" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
 unique_name_in_owner = true

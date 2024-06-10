@@ -8,6 +8,8 @@ public partial class ResourceConfig : Resource
 {
     [Export] public string ModsFolderPath { get; set; }
 
+    public ModInfo ModInfo { get; set; }
+
     public bool IsModsFolderPathSet()
     {
         return !string.IsNullOrWhiteSpace(ModsFolderPath);

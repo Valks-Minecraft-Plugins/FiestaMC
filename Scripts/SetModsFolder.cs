@@ -11,7 +11,7 @@ public partial class SetModsFolder : FileDialog
             Config.ModsFolderPath = dir;
             Config.Save();
 
-            ModInfo modInfo = GetTree().Root.GetNode<Program>("Program").ModInfo;
+            ModInfo modInfo = Config.ModInfo;
             modInfo.StopFileWatcher();
             modInfo.ObtainAllModInformation();
             modInfo.StartFileWatcher();
