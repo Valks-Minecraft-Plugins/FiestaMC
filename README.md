@@ -13,13 +13,17 @@ This works but when you have over 400 mods and you quickly remove 200 mods witho
 
 This tool will auto add back all the required dependencies you removed and add them back to the mods folder for you.
 
-## Features
-- Auto add back removed dependencies
-- Copy modlist (excluding API mods) in a human readable format intended to be shared with your friends
+## Finding Culprit Mods
+1. Click the "Remove Half of Mods" button (this will move half of your mods from `mods` to `mods/temp`)
+2. Manually create the new folder `mods/not culprit` (it is very important it be named exactly like this and inside the mods folder)
+3. Run Minecraft. Depending on if the issue exists or not follow the appropriate steps below: *(Make sure to close Minecraft before doing these steps)*
+   - (A) Issue **exists**: Cut all mods from `mods/temp` to `mods/not culprit` and repeat step 1
+   - (B) Issue does **NOT** exist: Cut all mods from `mods` to `mods/not culprit`. Cut all mods from `mods/temp` to `mods` and repeat step 1
+4. Repeat step 3 until you find the culprit mod. You may find that when there are a select few mods left, manually moving the mods will be faster
 
-## Technical
-- `temp` is the folder where mods are moved to when the "Remove Half of Mods" folder is pressed  
-- `not culprit` is the same as `temp` folder except this is where you're suppose to put mods that don't contribute to the problem  
+## Commands
+- `export`: Copies the modlist (excluding API mods) to the clipboard in a format intended to be shared with whoever asked for the modlist in your modpack
+- `clear`: Clears the console
 
 ## Roadmap
 - [ ] Implement info command, this will show the dependencies and incompatible ('breaks') mods for this mod (e.g. `info <mod_name>`)
