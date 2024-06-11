@@ -1,6 +1,6 @@
 > ℹ️ Godot v4.2.1.stable.mono.official [b09f793f5] is required to run this.
 
-> ℹ️ This tool only works on Fabric modpacks. Support for Forge modpacks will come if it gets requested enough.
+> ℹ️ This tool only works on Fabric modpacks. Support for Forge modpacks may come in the future.
 
 ![Untitled](https://github.com/Valks-Minecraft-Plugins/FiestaMC/assets/6277739/5ffa1587-9612-4892-ade5-64462cf42dc5)
 
