@@ -11,7 +11,7 @@ The brute force solution is to remove half your mods and check to see if the pro
 
 This works but when you have over 400 mods and you quickly remove 200 mods without giving it a second thought, you're also removing a ton of dependency mods that your new reduced mod list depends on. You could manually add them back but this is very time consuming.
 
-This tool will auto add back all the required dependencies you removed and add them back to the mods folder for you.
+**This tool will auto add back all the required dependencies you removed and add them back to the mods folder for you.**
 
 ## Finding Culprit Mods
 1. Click the "Remove Half of Mods" button (this will move half of your mods from `mods` to `mods/temp`)
